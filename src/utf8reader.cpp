@@ -71,21 +71,51 @@ static char32_t decode(char32_t& state, char32_t& codep, char32_t abyte)
     return state;
 }
 
-std::streamsize Utf8Reader::read(char32_t* buf, std::streamsize limit)
+char32_t Utf8Reader::get()
 {
+    if(!_pushback.empty()){
+        auto ch = _pushback.back();
+        _pushback.pop_back();
+        return ch;
+    }
+
     char32_t state = UTF8_ACCEPT;
     char32_t codep = 0;
+    char32_t abyte = 0;
 
-    for(std::streamsize ix=0; ix<limit;){
-
-        // next byte 
-        auto abyte = _source.get();
+    do{
+        abyte = _source.get();
         if(_source.eof() || _source.fail())
-            return ix;
+            return char32_t(-1);
 
-        auto rc = decode(state, codep, abyte);
-
-        if(!rc) buf[ix++] = codep;
-    }
-    return limit;
+    } while (decode(state, codep, abyte));
+    return codep;
 }
+
+void Utf8Reader::unget(char32_t ch)
+{
+    if(ch != char32_t(-1))
+        _pushback.push_back(ch);
+}
+
+std::u32string Utf8Reader::getWhile(std::function<bool(char32_t)> pred)
+{
+    std::u32string result;
+    while(true){
+        auto ch = get();
+        if(pred(ch))
+            result.push_back(ch);
+        else{
+            unget(ch);
+            break;
+        }
+    }
+}
+
+std::u32string Utf8Reader::getUntil(std::function<bool(char32_t)> pred)
+{
+    std::u32string result;
+    
+}
+
+

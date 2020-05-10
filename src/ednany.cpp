@@ -20,29 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-#include <istream>
-#include <vector>
-#include <utility>
-#include <string>
-#include <functional>
+
+#include <edncxx/ednany.h>
 
 namespace edncxx{
-
-    // Utf8Reader wraps an std::istream& and yields buffers of char32_t 
-    class Utf8Reader{
-    public:
-        explicit Utf8Reader(std::istream& source); 
-        virtual ~Utf8Reader();
-        char32_t get();
-        void unget(char32_t);
-        std::u32string getWhile(std::function<bool(char32_t)> pred);
-        std::u32string getUntil(std::function<bool(char32_t)> pred);
-        const std::pair<unsigned, unsigned> loc() const { return _loc; }
-
-    public:
-        std::istream& _source;
-        std::vector<char32_t> _pushback;
-        std::pair<unsigned, unsigned> _loc;
-    };
-}
+} // ns

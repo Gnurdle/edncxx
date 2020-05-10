@@ -21,28 +21,21 @@
 // THE SOFTWARE.
 
 #pragma once
-#include <istream>
-#include <vector>
-#include <utility>
-#include <string>
-#include <functional>
-
+#include <any>
 namespace edncxx{
+    using Value = std::any;
 
-    // Utf8Reader wraps an std::istream& and yields buffers of char32_t 
-    class Utf8Reader{
-    public:
-        explicit Utf8Reader(std::istream& source); 
-        virtual ~Utf8Reader();
-        char32_t get();
-        void unget(char32_t);
-        std::u32string getWhile(std::function<bool(char32_t)> pred);
-        std::u32string getUntil(std::function<bool(char32_t)> pred);
-        const std::pair<unsigned, unsigned> loc() const { return _loc; }
+    bool isNil(const Value&);
+    bool isBool(const Value&);
+    bool isString(const Value&);
+    bool isChar(const Value&);
+    bool isKeyword(const Value&);
+    bool isInteger(const Value&);
+    bool isFloat(const Value&);
+    bool isList(const Value&);
+    bool isVector(const Value&);
+    bool isMap(const Value&);
+    bool isSet(const Value&);
+    bool isTagged(const Value&);
 
-    public:
-        std::istream& _source;
-        std::vector<char32_t> _pushback;
-        std::pair<unsigned, unsigned> _loc;
-    };
 }

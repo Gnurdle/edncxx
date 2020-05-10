@@ -36,29 +36,18 @@ TEST(utf8, TestSevenBitUtf){
     std::istringstream strm(buf);
     edncxx::Utf8Reader ureader(strm);
 
-    // now read from the reader, should get same count back
-    char32_t got[128];
-    auto ngot = ureader.read(&got[0], 128);
-    EXPECT_EQ(ngot, 128);
-
-
-    // make sure we got what we sent  
     for(auto ix=0; ix<128; ix++){
-        EXPECT_EQ(got[ix], ix);
+        EXPECT_EQ(static_cast<char32_t>(buf[ix]), ureader.get());
     }
-
-    // reading now should hit end
-    EXPECT_EQ(ureader.read(&got[0], 3), 0);
+    EXPECT_EQ(static_cast<char32_t>(-1), ureader.get());
 }
 
 TEST(utf8, WikipediaSamples){
     auto verify = [](char32_t codept, const std::string& input)->bool{
         std::istringstream strm(input);
         edncxx::Utf8Reader ureader(strm);
-        char32_t cpfound;
-        auto ngot = ureader.read(&cpfound, 1);
-        return (ngot == 1) && (cpfound == codept) &&
-            (ureader.read(&cpfound, 1) == 0); 
+        auto cpfound = ureader.get();
+        return (cpfound == codept) && (ureader.get() == char32_t(-1)); 
     };
     EXPECT_TRUE( verify(0x0024,  "\x24" ));
     EXPECT_TRUE( verify(0x00a2,  "\xc2\xa2" ));
