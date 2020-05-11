@@ -22,8 +22,11 @@
 
 #include <gtest/gtest.h>
 #include <edncxx/utf8reader.h>
+#include <edncxx/utf8cvt.h>
 #include <sstream>
 #include <string>
+
+#include <locale>
 
 TEST(utf8, TestSevenBitUtf){
 
@@ -51,9 +54,18 @@ TEST(utf8, WikipediaSamples){
     };
     EXPECT_TRUE( verify(0x0024,  "\x24" ));
     EXPECT_TRUE( verify(0x00a2,  "\xc2\xa2" ));
-    EXPECT_TRUE( verify(0x00a2,  "\xc2\xa2" ));
     EXPECT_TRUE( verify(0x0939,  "\xe0\xa4\xb9"));
     EXPECT_TRUE( verify(0x20ac,  "\xe2\x82\xac"));
     EXPECT_TRUE( verify(0xd55c,  "\xed\x95\x9c"));
     EXPECT_TRUE( verify(0x10348, "\xf0\x90\x8d\x88"));
 }
+
+TEST(utf8, twoWayString )
+{
+    std::u32string s32 = {0x0024, 0x00a2, 0x0939, 0x20ac, 0xd55c, 0x10348};
+    std::string s8 = "\x24\xc2\xa2\xe0\xa4\xb9\xe2\x82\xac\xed\x95\x9c\xf0\x90\x8d\x88";
+
+    EXPECT_EQ(edncxx::encodeUtf8(s32), s8);
+    EXPECT_EQ(edncxx::decodeUtf8(s8), s32);
+}
+

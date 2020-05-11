@@ -29,3 +29,4 @@ endmacro()
 
 enable_testing()
 mktest(utf8reader)
+mktest(ednreader)

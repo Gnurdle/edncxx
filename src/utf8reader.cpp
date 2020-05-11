@@ -98,6 +98,14 @@ void Utf8Reader::unget(char32_t ch)
         _pushback.push_back(ch);
 }
 
+void Utf8Reader::unget(const std::u32string_view& buf)
+{
+    auto it = buf.end();
+    while(it != buf.begin()){
+        unget(*(--it));
+    }
+}
+
 std::u32string Utf8Reader::getWhile(std::function<bool(char32_t)> pred)
 {
     std::u32string result;
@@ -110,12 +118,18 @@ std::u32string Utf8Reader::getWhile(std::function<bool(char32_t)> pred)
             break;
         }
     }
+    return result;
 }
 
 std::u32string Utf8Reader::getUntil(std::function<bool(char32_t)> pred)
 {
     std::u32string result;
-    
+    while(true){
+        auto ch = get();
+        if(!pred(ch)){
+            unget(ch);
+            return result;
+        }
+        result.push_back(ch);
+    }
 }
-
-

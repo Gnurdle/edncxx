@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 
 
+#include <edncxx/ednreader.h>
 #include <edncxx/utf8reader.h>
 
 #include <sstream>
@@ -42,9 +43,9 @@ static bool isterminator(char32_t ch)
     return ch == U'(' || ch == U')' || 
            ch == U'[' || ch == U']' || 
            ch == U'{' || ch == U'}' || 
+           ch == char32_t(-1) ||
            iswhitespace(ch);
-    }
-}    
+}
 
 static void eatwhitespace(Utf8Reader& r)
 {
@@ -69,96 +70,113 @@ static void boom(const std::string_view& what)
     throw std::runtime_error(msg.str());
 }
 
-// forward
-static std::optional<edncxx::Value> readValue(Utf8Reader& r);
+static bool tokenmatch(Utf8Reader& r, const std::string_view& text)
+{
+    std::u32string buf;
+    for(auto want : text){
+        auto got = r.get();
+        if(got == -1 || got != want || isterminator(got))
+            break;
+    }
+    if(buf.length() != text.length()){
+        r.unget(buf);
+        return false;
+    }
+    return true;
+}
 
-static Value readString(Utf8Reader&)
+// forward
+std::optional<edncxx::ValueType> readValue(Utf8Reader& r);
+
+static ValueType readString(Utf8Reader&)
 {
     boom("readString");
     return {};
 }
 
-static Value readChar(Utf8Reader&)
+static ValueType readChar(Utf8Reader&)
 {
     boom("readChar");
     return {};
 }
 
-static Value readKeyword(Utf8Reader&)
+static ValueType readKeyword(Utf8Reader&)
 {
     boom("readKeyword");
     return {};
 }
 
-static Value readSymbol(Utf8Reader&)
+static ValueType readSymbol(Utf8Reader&)
 {
     boom("readSymbol");
     return {};
 }
 
-static Value readList(Utf8Reader&)
+static ValueType readList(Utf8Reader&)
 {
     boom("readList");
     return {};
 }
 
-static Value readVector(Utf8Reader&)
+static ValueType readVector(Utf8Reader&)
 {
     boom("readVector");
     return {};
 }
 
-static Value readMap(Utf8Reader&)
+static ValueType readMap(Utf8Reader&)
 {
     boom("readMap");
     return {};
 }
 
-static std::optional<Value> readSet(Utf8Reader&)
+static std::optional<ValueType> readSet(Utf8Reader&)
 {
     boom("readSet");
     return {};
 }
 
-static std::optional<Value> readTagged(Utf8Reader&)
+static std::optional<ValueType> readTagged(Utf8Reader&)
 {
     boom("readTagged");
     return {};
 }
 
-static std::optional<Value> readDiscard(Utf8Reader&)
+static std::optional<ValueType> readDiscard(Utf8Reader&)
 {
     boom("readDiscard");
     return {};
 }
 
-static std::optional<Value> readNil(Utf8Reader&)
+static std::optional<ValueType> readNil(Utf8Reader& r)
 {
-    boom("readNil");
-    return {};
+    if(tokenmatch(r, "nil")) return NilType();
+    return std::nullopt;
 }
 
-static std::optional<Value> readBool(Utf8Reader&)
+static std::optional<ValueType> readBool(Utf8Reader& r)
 {
-    boom("readBool");
-    return {};
+    if(tokenmatch(r, "true")) return BoolType{ true };
+    if(tokenmatch(r, "false")) return BoolType{ false };
+    return std::nullopt;
 }
 
-static std::optional<Value> readInteger(Utf8Reader&)
+static std::optional<ValueType> readInteger(Utf8Reader&)
 {
     boom("readInteger");
     return {};
 }
 
-static std::optional<Value> readFloat(Utf8Reader&)
+static std::optional<ValueType> readFloat(Utf8Reader& r)
 {
+    // auto buf = r.getUntil(r, isterminator);
     boom("readFloat");
     return {};
 }
 
-std::optional<Value> readValue(Utf8Reader& r)
+std::optional<ValueType> readValue(Utf8Reader& r)
 {
-    std::optional<Value> result;
+    std::optional<ValueType> result;
     while(!result){
         r.getWhile(iswhitespace);
         auto ch = r.get();
@@ -201,3 +219,5 @@ std::optional<Value> readValue(Utf8Reader& r)
     }
     return result;
 }
+
+} // namespace 

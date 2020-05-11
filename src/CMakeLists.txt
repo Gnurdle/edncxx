@@ -20,6 +20,6 @@
 ## OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ## THE SOFTWARE.
 
-add_library(edncxx utf8reader.cpp ednreader.cpp ednany.cpp)
+add_library(edncxx utf8cvt.cpp utf8reader.cpp ednreader.cpp ednany.cpp)
 target_include_directories(edncxx PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_compile_features(edncxx PUBLIC cxx_std_17)
