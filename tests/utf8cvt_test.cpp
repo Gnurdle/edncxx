@@ -21,36 +21,31 @@
 // THE SOFTWARE.
 
 #include <gtest/gtest.h>
-#include <edncxx/utf8reader.h>
 #include <edncxx/utf8cvt.h>
-#include <sstream>
-#include <string>
+using namespace edncxx;
 
-#include <locale>
-
-TEST(utf8, TestSevenBitUtf){
+TEST(utf8cvt, TransparentSevenBit){
 
     // make a buffer of the 7-bit chars
-    std::string buf(128, 0);
+    std::string string8(128, 0);
     for(auto ix=0; ix<128; ix++)
-        buf[ix] = static_cast<char>(ix);
+        string8[ix] = static_cast<char>(ix);
 
-    // feed them via stream to utf8 reader
-    std::istringstream strm(buf);
-    edncxx::Utf8Reader ureader(strm);
+    std::u32string string32(128, 0);
+    for(auto ix=0; ix<128; ix++)
+        string32[ix] = static_cast<char32_t>(ix);
 
-    for(auto ix=0; ix<128; ix++){
-        EXPECT_EQ(static_cast<char32_t>(buf[ix]), ureader.get());
-    }
-    EXPECT_EQ(static_cast<char32_t>(-1), ureader.get());
+    EXPECT_EQ(string32, decodeUtf8(string8));
+    EXPECT_EQ(string8, encodeUtf8(string32));
 }
 
-TEST(utf8, WikipediaSamples){
+TEST(utf8cvt, WikipediaSamples){
+
     auto verify = [](char32_t codept, const std::string& input)->bool{
-        std::istringstream strm(input);
-        edncxx::Utf8Reader ureader(strm);
-        auto cpfound = ureader.get();
-        return (cpfound == codept) && (ureader.get() == char32_t(-1)); 
+
+        std::u32string cpstr(1, codept);
+        auto encoded = encodeUtf8(cpstr);
+        return (cpstr == decodeUtf8(input) && (encoded == input));
     };
     EXPECT_TRUE( verify(0x0024,  "\x24" ));
     EXPECT_TRUE( verify(0x00a2,  "\xc2\xa2" ));
@@ -60,7 +55,7 @@ TEST(utf8, WikipediaSamples){
     EXPECT_TRUE( verify(0x10348, "\xf0\x90\x8d\x88"));
 }
 
-TEST(utf8, twoWayString )
+TEST(utf8cvt, TwoWayString)
 {
     std::u32string s32 = {0x0024, 0x00a2, 0x0939, 0x20ac, 0xd55c, 0x10348};
     std::string s8 = "\x24\xc2\xa2\xe0\xa4\xb9\xe2\x82\xac\xed\x95\x9c\xf0\x90\x8d\x88";

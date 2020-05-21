@@ -29,21 +29,27 @@
 
 namespace edncxx{
 
-    // Utf8Reader wraps an std::istream& and yields buffers of char32_t 
+    // Utf8Reader wraps an std::istream& and yields char32_t
+    // the stream will be imbued with the utf8-codecvt internally
+    // also implements a reliable unget(),
+    // keeps track of line/columns
+    // few tools to help with parsing
     class Utf8Reader{
     public:
         explicit Utf8Reader(std::istream& source); 
         virtual ~Utf8Reader();
         char32_t get();
+        char32_t peek();
         void unget(char32_t);
         void unget(const std::u32string_view&);
         std::u32string getWhile(std::function<bool(char32_t)> pred);
         std::u32string getUntil(std::function<bool(char32_t)> pred);
-        const std::pair<unsigned, unsigned> loc() const { return _loc; }
+        using Location = std::pair<unsigned, unsigned>;
+        const Location& loc() const { return _loc; }
 
-    public:
+    private:
         std::istream& _source;
         std::vector<char32_t> _pushback;
-        std::pair<unsigned, unsigned> _loc;
+        Location _loc;
     };
 }

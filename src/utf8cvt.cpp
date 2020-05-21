@@ -23,19 +23,20 @@
 
 #include <edncxx/utf8cvt.h>
 
-#include <locale>
 #include <sstream>
 #include <stdexcept>
 
 using namespace edncxx;
 namespace edncxx{
 
-class MyCodeCvt : public std::codecvt<char32_t, char, std::mbstate_t>{
+// needed to thwart protected dtor
+class utf8codecvt : public std::codecvt<char32_t, char, std::mbstate_t>{
 };
+
 
 std::string encodeUtf8(const std::u32string& from)
 {
-    MyCodeCvt cvt;
+    utf8codecvt cvt;
     std::mbstate_t state = {};
 
     std::string to(4*from.size(), 0);
@@ -43,7 +44,7 @@ std::string encodeUtf8(const std::u32string& from)
     const char32_t* from_next;
     auto rc = cvt.out(state, from.data(), from.data() + from.size(), from_next,
                       to.data(), to.data()+to.size(), to_next);
-    if(rc != MyCodeCvt::ok){
+    if(rc != utf8codecvt::ok){
         std::ostringstream msg;
         msg << "encodeUtf8 returned unexpected state: " << int(rc);
         throw std::runtime_error(msg.str());
@@ -53,14 +54,14 @@ std::string encodeUtf8(const std::u32string& from)
 
 std::u32string decodeUtf8(const std::string& from)
 {
-    MyCodeCvt cvt;
+    utf8codecvt cvt;
     std::mbstate_t state = {};
     std::u32string to(from.size(), 0);
     char32_t* to_next;
     const char* from_next;
     auto rc = cvt.in(state, from.data(), from.data() + from.size(), from_next,
                     to.data(), to.data()+to.size(), to_next);
-    if(rc != MyCodeCvt::ok){
+    if(rc != utf8codecvt::ok){
         std::ostringstream msg;
         msg << "decodeUtf8 returned unexpected state: " << int(rc);
         throw std::runtime_error(msg.str());

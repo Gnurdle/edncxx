@@ -24,6 +24,7 @@
 #include <edncxx/ednreader.h>
 #include <edncxx/utf8reader.h>
 
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <optional>
@@ -31,6 +32,7 @@
 #include <edncxx/ednany.h>
 
 using namespace edncxx;
+using namespace std;
 namespace edncxx{
 
 static bool iswhitespace(char32_t ch)
@@ -75,8 +77,11 @@ static bool tokenmatch(Utf8Reader& r, const std::string_view& text)
     std::u32string buf;
     for(auto want : text){
         auto got = r.get();
-        if(got == -1 || got != want || isterminator(got))
+        if(got == -1 || got != want || isterminator(got)){
+            r.unget(got);
             break;
+        }
+        buf.push_back(got);
     }
     if(buf.length() != text.length()){
         r.unget(buf);
@@ -150,7 +155,9 @@ static std::optional<ValueType> readDiscard(Utf8Reader&)
 
 static std::optional<ValueType> readNil(Utf8Reader& r)
 {
-    if(tokenmatch(r, "nil")) return NilType();
+    if(tokenmatch(r, "nil")){
+        return NilType();
+    }
     return std::nullopt;
 }
 
@@ -179,7 +186,7 @@ std::optional<ValueType> readValue(Utf8Reader& r)
     std::optional<ValueType> result;
     while(!result){
         r.getWhile(iswhitespace);
-        auto ch = r.get();
+        auto ch = r.peek();
         if(ch == char32_t(-1))
             return {};
 

@@ -28,5 +28,6 @@ macro(mktest test_name)
 endmacro()
 
 enable_testing()
-mktest(utf8reader)
-mktest(ednreader)
+mktest(utf8reader_test)
+mktest(ednreader_test)
+mktest(utf8cvt_test)

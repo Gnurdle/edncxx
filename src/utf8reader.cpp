@@ -92,18 +92,23 @@ char32_t Utf8Reader::get()
     return codep;
 }
 
+char32_t Utf8Reader::peek()
+{
+    auto ch = get();
+    unget(ch);
+    return ch;
+}
+
 void Utf8Reader::unget(char32_t ch)
 {
     if(ch != char32_t(-1))
         _pushback.push_back(ch);
 }
 
-void Utf8Reader::unget(const std::u32string_view& buf)
+void Utf8Reader::unget(const std::u32string_view& str)
 {
-    auto it = buf.end();
-    while(it != buf.begin()){
-        unget(*(--it));
-    }
+    for(auto it=str.rbegin(); it != str.rend(); ++it)
+        unget(*it);
 }
 
 std::u32string Utf8Reader::getWhile(std::function<bool(char32_t)> pred)
@@ -126,10 +131,12 @@ std::u32string Utf8Reader::getUntil(std::function<bool(char32_t)> pred)
     std::u32string result;
     while(true){
         auto ch = get();
-        if(!pred(ch)){
+        if(pred(ch)){
             unget(ch);
             return result;
         }
         result.push_back(ch);
     }
 }
+
+

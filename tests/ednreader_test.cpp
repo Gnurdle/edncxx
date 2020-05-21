@@ -21,12 +21,43 @@
 // THE SOFTWARE.
 
 #include <gtest/gtest.h>
+#include <iostream>
 #include <edncxx/utf8reader.h>
 #include <edncxx/ednreader.h>
+#include <edncxx/ednany.h>
+using namespace edncxx;
+using namespace std;
 
-TEST(ednreader, TestEmpty){
-    
+TEST(ednreader, TestEmpty)
+{
     std::istringstream strm("");
     edncxx::Utf8Reader ureader(strm);
     EXPECT_FALSE(edncxx::readValue(ureader));
 }
+
+TEST(ednreader, nil)
+{
+    std::string str(" nil ");
+    std::istringstream strm(str);
+    Utf8Reader rdr(strm);
+    if(auto optval = readValue(rdr)){
+        EXPECT_TRUE( is<NilType>(*optval));
+        EXPECT_FALSE(readValue(rdr));
+    } else FAIL();
+
+}
+
+#ifdef NOPE
+
+TEST(ednreader, bool)
+{
+    std::string str(" true         false");
+    std::istringstream strm(str);
+    Utf8Reader rdr(strm);
+    auto got = readValue(rdr);
+    EXPECT_TRUE( got && is<BoolType>(*got) && std::any_cast<BoolType>(got));
+    got = readValue(rdr);
+    EXPECT_TRUE( got && is<BoolType>(*got) && !std::any_cast<BoolType>(got));
+    EXPECT_FALSE(readValue(rdr));
+}
+#endif 

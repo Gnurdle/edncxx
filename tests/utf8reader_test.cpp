@@ -20,11 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <string>
-#include <locale>
+#include <gtest/gtest.h>
+#include <edncxx/utf8reader.h>
+#include <edncxx/ednreader.h>
+#include <edncxx/ednany.h>
+#include <sstream>
 
-namespace edncxx{
-
-    std::string encodeUtf8(const std::u32string& from);
-    std::u32string decodeUtf8(const std::string& from);
-}
+using namespace edncxx;
