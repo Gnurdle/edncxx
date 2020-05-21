@@ -44,20 +44,19 @@ TEST(ednreader, nil)
         EXPECT_TRUE( is<NilType>(*optval));
         EXPECT_FALSE(readValue(rdr));
     } else FAIL();
-
 }
-
-#ifdef NOPE
 
 TEST(ednreader, bool)
 {
     std::string str(" true         false");
     std::istringstream strm(str);
     Utf8Reader rdr(strm);
-    auto got = readValue(rdr);
-    EXPECT_TRUE( got && is<BoolType>(*got) && std::any_cast<BoolType>(got));
-    got = readValue(rdr);
-    EXPECT_TRUE( got && is<BoolType>(*got) && !std::any_cast<BoolType>(got));
-    EXPECT_FALSE(readValue(rdr));
+    const auto tt = readValue(rdr);
+    const auto ff = readValue(rdr);
+    EXPECT_TRUE(tt && ff);
+    EXPECT_EQ(edntype(*tt), EdnType::T_Bool);
+    EXPECT_EQ(edntype(*tt), EdnType::T_Bool);
+    EXPECT_TRUE(is<BoolType>(*tt) && is<BoolType>(*ff));
+    EXPECT_EQ(std::any_cast<BoolType>(*tt), true);
+    EXPECT_EQ(std::any_cast<BoolType>(*ff), false);
 }
-#endif 
