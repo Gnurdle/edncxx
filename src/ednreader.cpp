@@ -93,10 +93,43 @@ static bool tokenmatch(Utf8Reader& r, const std::string_view& text)
 // forward
 std::optional<edncxx::ValueType> readValue(Utf8Reader& r);
 
-static ValueType readString(Utf8Reader&)
+static ValueType readString(Utf8Reader& rdr)
 {
-    boom("readString");
-    return {};
+    bool in_escape = false;
+    std::u32string result;
+    auto q = rdr.get();
+    if(q != U'"'){
+        throw std::logic_error("readString input not \"");
+    }
+    while(true){
+        auto ch = rdr.get();
+        if(in_escape){
+            
+            auto ach = 0;
+            switch(ch){
+                case U't':   ch = U'\t'; break;
+                case U'r':   ch = U'\r'; break;
+                case U'n':   ch = U'\n'; break;
+                case U'\\':  ch = U'\\'; break;
+                case U'"':   ch = U'"';  break;
+                default:{
+                    std::ostringstream msg;
+                    msg << "unsupported escape character: \\" << ch;
+                    throw std::runtime_error(msg.str());
+                }
+            }
+            in_escape = false;
+        }
+        else{
+            if(ch == U'"') break;
+            if(ch == U'\\'){
+                in_escape = true;
+                continue;
+            }
+        }
+        result.push_back(ch);
+    }
+    return result;
 }
 
 static ValueType readChar(Utf8Reader&)

@@ -60,3 +60,22 @@ TEST(ednreader, bool)
     EXPECT_EQ(std::any_cast<BoolType>(*tt), true);
     EXPECT_EQ(std::any_cast<BoolType>(*ff), false);
 }
+
+TEST(ednreader, string)
+{
+    std::string str("  \"Hello World!\"   \"tab\\tnl\\n\"");
+    std::u32string ans1(U"Hello World!");
+    std::u32string ans2(U"tab\tnl\n");
+    std::istringstream strm(str);
+    Utf8Reader rdr(strm);
+
+    auto ss = readValue(rdr);
+    EXPECT_TRUE(ss);
+    EXPECT_EQ(edntype(*ss), EdnType::T_String);
+    EXPECT_EQ(std::any_cast<StringType>(*ss), ans1);
+
+    ss = readValue(rdr);
+    EXPECT_TRUE(ss);
+    EXPECT_EQ(edntype(*ss), EdnType::T_String);
+    EXPECT_EQ(std::any_cast<StringType>(*ss), ans2);
+}
